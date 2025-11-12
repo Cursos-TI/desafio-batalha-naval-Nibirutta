@@ -5,7 +5,6 @@
 
 // Assimilando um nome simbolico para um valor constante, fazer isso torna a manutenção do código melhor
 #define BOARD_SIZE 10
-#define SMALL_SHIP 3
 
 void updateBoard(int board[BOARD_SIZE][BOARD_SIZE])
 {
@@ -71,13 +70,8 @@ int placeShip(int board[BOARD_SIZE][BOARD_SIZE], int startRow, int startCol, int
         return 0;
     }
 
-    // Validacao de tamanho do navio
     // O tamanho eh o maior dos deltas (em modulo) + 1
     int shipSize = maximum(abs(deltaRow), abs(deltaCol)) + 1;
-    if (shipSize != SMALL_SHIP) {
-        printf("Erro: O navio tem tamanho %d, mas deveria ter %d.\n", shipSize, SMALL_SHIP);
-        return 0;
-    }
 
     // Determina a direção do "passo" para linha e coluna
     // Se deltaRow > 0, passo eh 1. Se < 0, passo eh -1. Se = 0, passo eh 0.
@@ -128,7 +122,7 @@ int main()
 
     while (playerChoice == 1)
     {
-        printf("\nPosicione um navio de %d blocos (ex: A1 a A3, B2 a D2, ou A1 a C3).\n", SMALL_SHIP);
+        printf("\nPosicione um navio nas coordenadas do tabuleiro.\n");
 
         // Loop para garantir que o usuario insira uma posicao valida
         int placed = 0;
