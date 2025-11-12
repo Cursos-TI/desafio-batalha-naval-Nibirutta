@@ -1,40 +1,166 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <math.h>
 
-// Desafio Batalha Naval - MateCheck
-// Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
-// Siga os comentários para implementar cada parte do desafio.
+// Assimilando um nome simbolico para um valor constante, fazer isso torna a manutenção do código melhor
+#define BOARD_SIZE 10
+#define SMALL_SHIP 3
 
-int main() {
-    // Nível Novato - Posicionamento dos Navios
-    // Sugestão: Declare uma matriz bidimensional para representar o tabuleiro (Ex: int tabuleiro[5][5];).
-    // Sugestão: Posicione dois navios no tabuleiro, um verticalmente e outro horizontalmente.
-    // Sugestão: Utilize `printf` para exibir as coordenadas de cada parte dos navios.
+void updateBoard(int board[BOARD_SIZE][BOARD_SIZE])
+{
+    // Dando um espaçamento inicial para o tabuleiro
+    // E imprimindo as letras referentes as colunas
+    printf("\n   ");
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        printf(" %c ", 'A' + i);
+    }
+    printf("\n");
 
-    // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
-    // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
-    // Sugestão: Posicione quatro navios no tabuleiro, incluindo dois na diagonal.
-    // Sugestão: Exiba o tabuleiro completo no console, mostrando 0 para posições vazias e 3 para posições ocupadas.
+    // Iterando sobre as linhas e colunas para imprimir o tabuleiro
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        // Coloquei o 2 ali no printf para reserva um espaço de 2 digitos
+        printf("%2i ", i + 1);
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            // Caso a celula tenha um navio, optei por colocar N
+            // Caso contrario, coloquei o simbolo ~ para representar a agua
+            if (board[i][j] == 1)
+            {
+                printf(" N ");
+            }
+            else
+            {
+                printf(" ~ ");
+            }
+        }
+        // Finalizando a ultima linha
+        printf("\n");
+    }
+    // Pula uma linha para dar um espaçamento
+    printf("\n");
+}
 
-    // Nível Mestre - Habilidades Especiais com Matrizes
-    // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
-    // Sugestão: Utilize estruturas de repetição aninhadas para preencher as áreas afetadas por essas habilidades no tabuleiro.
-    // Sugestão: Exiba o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas atingidas.
+// Função auxiliar simples para pegar o maior de dois inteiros
+int maximum(int a, int b) {
+    return (a > b) ? a : b;
+}
 
-    // Exemplos de exibição das habilidades:
-    // Exemplo para habilidade em cone:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 1 1 1 1 1
-    
-    // Exemplo para habilidade em octaedro:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 0 0 1 0 0
+int placeShip(int board[BOARD_SIZE][BOARD_SIZE], int startRow, int startCol, int endRow, int endCol)
+{
+    // Validacao de limite nas coordenadas, dentro do espaco do tabuleiro
+    if (startRow < 0 || startRow >= BOARD_SIZE || startCol < 0 || startCol >= BOARD_SIZE ||
+        endRow < 0 || endRow >= BOARD_SIZE || endCol < 0 || endCol >= BOARD_SIZE)
+    {
+        printf("Erro: Posicao fora do tabuleiro.\n");
+        return 0;
+    }
 
-    // Exemplo para habilidade em cruz:
-    // 0 0 1 0 0
-    // 1 1 1 1 1
-    // 0 0 1 0 0
+    int deltaRow = endRow - startRow;
+    int deltaCol = endCol - startCol;
+
+    // Validacao de orientacao (horizontal, vertical ou diagonal 45 graus)
+    // Se for horizontal, deltaRow eh 0
+    // Se for vertical, deltaCol eh 0
+    // Se for diagonal, abs(deltaRow) deve ser igual a abs(deltaCol)
+    if (deltaRow != 0 && deltaCol != 0 && abs(deltaRow) != abs(deltaCol))
+    {
+        printf("Erro: O navio so pode ser posicionado na horizontal, vertical ou diagonal (45 graus).\n");
+        return 0;
+    }
+
+    // Validacao de tamanho do navio
+    // O tamanho eh o maior dos deltas (em modulo) + 1
+    int shipSize = maximum(abs(deltaRow), abs(deltaCol)) + 1;
+    if (shipSize != SMALL_SHIP) {
+        printf("Erro: O navio tem tamanho %d, mas deveria ter %d.\n", shipSize, SMALL_SHIP);
+        return 0;
+    }
+
+    // Determina a direção do "passo" para linha e coluna
+    // Se deltaRow > 0, passo eh 1. Se < 0, passo eh -1. Se = 0, passo eh 0.
+    int rowStep = (deltaRow == 0) ? 0 : (deltaRow > 0 ? 1 : -1);
+    int colStep = (deltaCol == 0) ? 0 : (deltaCol > 0 ? 1 : -1);
+
+    // Validacao de sobreposicao
+    // "Andamos" pelo caminho do navio antes de coloca-lo
+    for (int i = 0; i < shipSize; i++)
+    {
+        int currentRow = startRow + (i * rowStep);
+        int currentCol = startCol + (i * colStep);
+        if (board[currentRow][currentCol] == 1)
+        {
+            printf("Erro: Ja existe um navio nessa posicao (%c%d).\n", 'A' + currentCol, currentRow + 1);
+            return 0;
+        }
+    }
+
+    // Se todas as validacoes passaram, marca as posicoes no tabuleiro
+    for (int i = 0; i < shipSize; i++)
+    {
+        int currentRow = startRow + (i * rowStep);
+        int currentCol = startCol + (i * colStep);
+        board[currentRow][currentCol] = 1;
+    }
+
+    printf("Navio posicionado com sucesso!\n");
+    return 1;
+}
+
+int main()
+{
+    // Inicializa o tabuleiro com 0 em todas as posições (representando água)
+    int gameBoard[BOARD_SIZE][BOARD_SIZE] = {0};
+
+    char startColChar, endColChar;
+    int startRow, endRow;
+    int startCol, endCol;
+
+    printf("Batalha Naval - Posicionamento de Navios\n");
+    printf("O tabuleiro eh %dx%d. As linhas vao de 1 a %d e as colunas de A a %c.\n",
+           BOARD_SIZE, BOARD_SIZE, BOARD_SIZE, 'A' + BOARD_SIZE - 1);
+
+    int playerChoice = 0;
+    printf("\nVoce quer posicionar algum navio no tabuleiro? 1 para SIM / 0 para NAO\n");
+    scanf("%i", &playerChoice);
+
+    while (playerChoice == 1)
+    {
+        printf("\nPosicione um navio de %d blocos (ex: A1 a A3, B2 a D2, ou A1 a C3).\n", SMALL_SHIP);
+
+        // Loop para garantir que o usuario insira uma posicao valida
+        int placed = 0;
+        while (!placed)
+        {
+            printf("Digite a coordenada inicial (ex: A1): ");
+            scanf(" %c%i", &startColChar, &startRow);
+
+            printf("Digite a coordenada final (ex: C3): ");
+            scanf(" %c%i", &endColChar, &endRow);
+
+            // Converte as coordenadas do formato 'A1' para indices de matriz (0,0)
+            // Subtrai 1 da linha porque o usuario digita de 1 a 10, mas o array vai de 0 a 9
+            // Converte a letra da coluna para um indice numerico (A=0, B=1, ...)
+            startCol = toupper(startColChar) - 'A';
+            endCol = toupper(endColChar) - 'A';
+            startRow--;
+            endRow--;
+
+            // Tenta posicionar o navio com as coordenadas fornecidas
+            placed = placeShip(gameBoard, startRow, startCol, endRow, endCol);
+        }
+
+        // Mostra o tabuleiro atualizado apous cada posicionamento
+        updateBoard(gameBoard);
+
+        printf("\nVoce ainda quer posicionar algum navio no tabuleiro? 1 para SIM / 0 para NAO\n");
+        scanf("%i", &playerChoice);
+    }
+
+    printf("\n--- Tabuleiro Final ---\n");
+    updateBoard(gameBoard);
 
     return 0;
 }
